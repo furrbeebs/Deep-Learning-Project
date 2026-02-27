@@ -1,0 +1,10 @@
+venv/
+.venv/
+env/
+__pycache__/
+*.ipynb_checkpoints/
+
+dataset/voraus-ad-dataset-100hz.parquet
+*.zip
+*.pth
+*.parquet
