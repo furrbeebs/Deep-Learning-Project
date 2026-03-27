@@ -1,0 +1,19 @@
+# Core data
+numpy
+pandas
+pyarrow          # needed to read .parquet files
+fastparquet      # alternative parquet engine (good to have)
+
+# ML / Deep Learning
+torch            # PyTorch — for LSTM/GRU Autoencoder
+scikit-learn     # scalers, metrics, train/test split helpers
+
+# Visualization / EDA
+matplotlib
+seaborn
+
+# Notebook (optional but highly recommended for EDA)
+jupyter
+
+# Utilities
+tqdm             # progress bars during training

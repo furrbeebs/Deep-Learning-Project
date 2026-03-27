@@ -8,3 +8,5 @@ dataset/voraus-ad-dataset-100hz.parquet
 *.zip
 *.pth
 *.parquet
+data 
+*.png
