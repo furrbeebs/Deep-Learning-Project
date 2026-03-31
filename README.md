@@ -10,7 +10,7 @@ Team members:
 Due to file size limitations, the dataset is not included in this repository. To run the training or evaluation scripts, please follow these steps:
 
 1. **Download the Data**: Obtain the `voraus-ad-dataset-100hz.parquet` file from (https://www.kaggle.com/datasets/marcorudolph/vorausad?select=train.py).
-2. **Placement**: Place the file in the root directory of this project.
+2. **Placement**: Place the dataset in the **root** directory of this project.
 3. **Verification**: Ensure the file name matches exactly as referenced in the notebooks (`voraus-ad-dataset-100hz.parquet`).
 
 The project is configured with a `.gitignore` to ensure this dataset is not accidentally uploaded to GitHub.
@@ -22,17 +22,16 @@ This notebook prepares raw robot sensor data for unsupervised LSTM autoencoder t
 The model is trained exclusively on normal samples and detects anomalies via reconstruction error.
 
 ## Requirements
-source venv/bin/activate
-pip install -r requirements.txt
+`source venv/bin/activate`
+`pip install -r requirements.txt`
 
-## Setup
-1. Download the raw parquet file and place it under root directory:
-   voraus-ad-dataset-100hz.parquet
+## Data Preprocessing
 
-3. Run all 9 cells in order in:
-   01_data_preparation.ipynb
+1. Run `00_data_analysis.ipynb`
 
-4. Verify Cell 9 prints "✓ All checks passed" before proceeding.
+2. Run `01_data_preparation.ipynb`
+
+3. Verify `01_data_preparation.ipynb`: Cell 9 prints **"✓ All checks passed"**.
 
 ## Output Files (written to data/processed/)
 | File                  | Description                                      |
