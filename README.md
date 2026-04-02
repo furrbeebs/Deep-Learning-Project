@@ -25,12 +25,12 @@ This deep learning project aims to build a deep learning model that learns the i
 - **Activation:** using ReLU for hidden layers
 
 
-##### **Why is the input 300 vector of numbers?**
+**Why is the input 300 vector of numbers?**
 
 The data of multivariate sensor signals will be transformed into discrete samples. Each sample is flattened to a vector of 300 features (20 timesteps * 15 sensors = 300). This vector captures the sensor values and context of the robot movement.
 
 
-##### **The dataset has 130 sensors, why did we select 15 and what are they?**
+**The dataset has 130 sensors, why did we select 15 and what are they?**
 
 We intend to focus on the vital sensors that cover the majority of the robot's mechanical health: torque, velocity, and load.
 
