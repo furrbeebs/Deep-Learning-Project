@@ -68,7 +68,8 @@ This notebook prepares raw robot sensor data for unsupervised MLP Autoencoder tr
 The model is trained exclusively on normal samples using a sliding window appraoch. It learns to reconstruct a 300-dimension input vector and detect anomalies via Mean Squared Error (MSE) reconstruction loss.
 
 ### Requirements
-`source venv/bin/activate`
+In bash, run the following:
+`.\venv\Scripts\activate`
 `pip install -r requirements.txt`
 
 ### Data Preprocessing
@@ -78,6 +79,18 @@ The model is trained exclusively on normal samples using a sliding window apprao
 2. Run `01_data_preparation.ipynb`
 
 3. Verify `01_data_preparation.ipynb`: Cell 9 prints **"✓ All checks passed"**.
+
+### Training 
+
+1. Run `02_train.ipynb`
+
+### Infering results
+
+1. In bash, run the following:
+`git add -f robot_autoencoder.pth`
+`git add -f data/processed/scaler.pkl`
+
+2. Run `03_inference.ipynb`
 
 ### Output Files (written to data/processed/)
 | File                  | Description                                      |

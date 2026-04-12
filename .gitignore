@@ -10,5 +10,20 @@ dataset/voraus-ad-dataset-100hz.parquet
 *.parquet
 data 
 *.png
+data/processed/*
+data/raw/*
+
+*.pkl
+!scaler.pkl
+
+.DS_Store
+Thumbs.db
+
+.vscode/
+.history/
+*.log
+
+data/*
+!data/processed/.gitkeep
 
 clean_env/
