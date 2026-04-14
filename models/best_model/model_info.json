@@ -1,0 +1,12 @@
+{
+  "model_type": "Random Forest",
+  "n_features": 2709,
+  "n_estimators": 300,
+  "max_depth": 20,
+  "test_roc_auc": 0.989,
+  "test_pr_auc": 0.9926,
+  "precision": 0.9569,
+  "recall": 0.9974,
+  "f1_score": 0.9767,
+  "accuracy": 0.9692
+}
