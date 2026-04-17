@@ -1,10 +1,5 @@
 # 50.039 Deep Learning Project
 
-**Group 14**
-Team members:
--  Phoebe
--  Lei Lei
-------
 
 ## Problem 
 In high-precision manufacturing, collaborative robots operate in close proximity with humans. Subtle mechanical irregularities (e.g. joint wear and collisions) are often times invisible to traditional monitoring and may lead to disastrous downtime and safety hazards.
@@ -119,7 +114,7 @@ When you are done working, deactivate the virtual environment with:
 deactivate
 ```
 ---
-### Details
+## Details
 **Dataset (100Hz version)**: https://www.kaggle.com/datasets/marcorudolph/vorausad
 
 **Input:** 300 input vectors of numbers
@@ -156,7 +151,7 @@ The other sensors (columns) that have been dropped are in these categories:
 
 ------
 
-### Dataset Setup
+## Dataset Setup
 
 Due to file size limitations, the dataset is not included in this repository. To run the training or evaluation scripts, please follow these steps:
 
@@ -230,3 +225,118 @@ In bash, run the following:
 | Train | 204,854    | 0       | 204,854   |
 | Val   | 43,865    | 0       | 43,865   |
 | Test  | 44,076    | 163,999     | 208,075   |
+
+------
+
+## LSTM Binary Classifier (Supervised Anomaly Detection)
+
+### Overview
+
+This LSTM-based binary classifier directly predicts whether a robot operation window is anomalous or normal. Unlike the autoencoder approaches (Parts A & B), this is a **supervised** model trained on labeled normal and anomalous windows.
+
+### Why LSTM Classifier?
+
+While autoencoders detect anomalies via reconstruction error, a supervised classifier can:
+- Learn explicit decision boundaries between normal and anomalous patterns
+- Achieve higher accuracy with sufficient labeled data
+- Provide direct anomaly probabilities (0-1) without threshold tuning on reconstruction error
+
+### Key Differences from Autoencoders
+
+| Aspect | MLP Autoencoder (A) | LSTM Autoencoder (B) | LSTM Classifier (C) |
+|--------|--------------------|----------------------|---------------------|
+| Approach | Unsupervised | Unsupervised | Supervised |
+| Output | Reconstruction MSE | Reconstruction MSE | Anomaly probability |
+| Training data | Normal only | Normal only | Normal + Anomaly |
+
+### Data Preparation
+
+Ensure that Dataset Setup is done.
+Run `03_data_prep_lstm_classifier.ipynb`
+
+**Key Operations:**
+- Redefines anomaly label: category 12 = normal, categories 0–11 = anomaly
+- Selects all 129 sensor columns (after removing constant columns)
+- Extracts sliding windows: size = 500 timesteps (5 seconds), stride = 50 (90% overlap)
+- Splits at sample level to prevent temporal leakage
+
+**Split Ratios:**
+| Split | Normal | Anomaly |
+|-------|--------|---------|
+| Train | 70% | 40% |
+| Validation | 15% | 30% |
+| Test | 15% | 30% |
+
+**Output Files:**
+- `../data/lstm_classifier/sequences.npz` — Window arrays
+- `../data/lstm_classifier/scaler.pkl` — Fitted StandardScaler
+- `../data/lstm_classifier/config.pkl` — Configuration
+
+### Model Architecture
+
+```
+Input: (batch, 500 timesteps, 129 features)
+    ↓
+LSTM (1 layer, hidden_dim=64)
+    ↓
+Dropout (p=0.3)
+    ↓
+Linear (64 → 32) + ReLU
+    ↓
+Linear (32 → 1) + Sigmoid
+    ↓
+Output: anomaly probability ∈ (0, 1)
+```
+
+### Hyperparameter Grid Search Results
+
+| Config | hidden_dim | layers | dropout | lr | Val AUC |
+|--------|------------|--------|---------|-----|---------|
+| 1 | 32 | 1 | 0.2 | 1e-3 | 0.9520 |
+| **2 (selected)** | **64** | **1** | **0.3** | **1e-3** | **0.9580** |
+| 3 | 64 | 2 | 0.3 | 1e-3 | 0.9522 |
+| 4 | 128 | 1 | 0.4 | 5e-4 | 0.9476 |
+
+### Training
+
+Run `lstm_classifier_model.ipynb`
+
+**Training Parameters:**
+- Loss: Binary Cross-Entropy (BCE)
+- Optimizer: Adam (weight_decay = 1e-5)
+- LR Scheduler: ReduceLROnPlateau (patience=3, factor=0.5)
+- Batch size: 32, Epochs: 20
+
+**Balanced Subsets (prevent majority-class bias):**
+| Subset | Normal | Anomaly |
+|--------|--------|---------|
+| Train | 1,500 | 1,500 |
+| Validation | 500 | 500 |
+| Test | 500 | 500 |
+
+### Output Files
+| File | Description |
+|------|-------------|
+| `../model/lstm_classifier/lstm_classifier_best.pth` | Best model weights |
+| `../model/lstm_classifier/lstm_classifier_config.pkl` | Architecture config |
+| `../figures/lstm_classifier/training_curves.png` | Loss & AUC curves |
+| `../figures/lstm_classifier/roc_and_prediction_dist.png` | ROC curve + prediction distribution |
+| `../figures/lstm_classifier/confusion_matrix.png` | Confusion matrix |
+| `../figures/lstm_classifier/failure_cases.png` | FP/FN example windows |
+
+### Performance Summary
+
+| Metric | Balanced Test | Full Test |
+|--------|---------------|-----------|
+| AUC | 0.9876 | 0.9856 |
+| Accuracy | 95% | 96% |
+| Precision (anomaly) | 0.95 | 0.96 |
+| Recall (anomaly) | 0.95 | 0.96 |
+| F1 (anomaly) | 0.95 | 0.96 |
+
+### Reproducibility
+All results use `RANDOM_SEED = 14`. The trained model files are saved under:
+- `./model/lstm_classifier/lstm_classifier_best.pth` (weights)
+- `./model/lstm_classifier/lstm_classifier_config.pkl` (architecture config)
+
+To load and use the model on new data without retraining, refer to **part 12** in `lstm_classifier_model.ipynb`, which provides complete code examples for model loading and inference.
