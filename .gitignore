@@ -3,7 +3,10 @@ venv/
 env/
 __pycache__/
 *.ipynb_checkpoints/
+*.py[cod]
+*$py.class
 
+*.npz
 dataset/voraus-ad-dataset-100hz.parquet
 *.zip
 *.pth
@@ -18,6 +21,7 @@ data/raw/*
 
 .DS_Store
 Thumbs.db
+desktop.ini
 
 .vscode/
 .history/
