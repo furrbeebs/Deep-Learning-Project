@@ -45,6 +45,7 @@ Project structure example:
 ```text
 
 ├── data/
+├── figures/
 ├── model/
 ├── notebooks/
 │   ├── 00_data_analysis.ipynb
