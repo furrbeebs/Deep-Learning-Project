@@ -12,7 +12,7 @@ This project implements three deep learning architectures to detect mechanical a
 ### Model Architectures
 - **MLP Autoencoder:** Baseline model using flattened 300 dimension vectors (20 timesteps x 15 features)
 - **LSTM Autoencoder:** Temporal aware model to capture sequence dependecies in sensor data.
-- **LSTM Classifier: ** A supervised many-to-one model that processes 5-second multivariate sensor sequences to predict a single binary anomaly probability. 
+- **LSTM Classifier:** A supervised many-to-one model that processes 5-second multivariate sensor sequences to predict a single binary anomaly probability. 
 
 ------
 ### Prerequisites
@@ -49,6 +49,8 @@ Project structure example:
 ├── notebooks/
 │   ├── model_lstm_autoencoder.ipynb
 │   └── model_mlp_autoencoder.ipynb
+│   └── 02_data_prep_lstm_classifier.ipynb
+│   └── lstm_classifier_model.ipynb
 ├── venv/
 ├── .gitignore
 ├── 00_data_analysis.ipynb
