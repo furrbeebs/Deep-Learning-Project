@@ -372,7 +372,7 @@ Run `lstm_classifier_model.ipynb`
 | F1 (anomaly) | 0.95 | 0.96 |
 
 ### Reproducibility
-All results use `RANDOM_SEED = 14`. The pre-trained model files are saved under:
+`RANDOM_SEED = 14` is used. The pre-trained model files are saved under:
 - `./model/lstm_classifier/lstm_classifier_best.pth` (weights)
 - `./model/lstm_classifier/lstm_classifier_config.pkl` (architecture config)
 
