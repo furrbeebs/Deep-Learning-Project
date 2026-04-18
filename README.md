@@ -6,6 +6,15 @@ In high-precision manufacturing, collaborative robots operate in close proximity
 This deep learning project aims to build a deep learning model that learns the intricate sensor patterns of a 'normal’ pick-and-place cycle, effectively predicting system failures before they occur and reduce the safety hazards and downtime of manufacturing.
 
 ------
+### Overview
+This project implements three deep learning architectures to detect mechanical anomalies in robot sensor data.
+
+### Model Architectures
+- **MLP Autoencoder:** Baseline model using flattened 300 dimension vectors (20 timesteps x 15 features)
+- **LSTM Autoencoder:** Temporal aware model to capture sequence dependecies in sensor data.
+- **LSTM Classifier: **
+
+------
 ### Prerequisites
 
 Ensure the following are installed:
@@ -17,7 +26,7 @@ Check your Python version:
 
 ```bash
 python3 --version
-````
+```
 
 ---
 
@@ -34,11 +43,18 @@ This creates a folder named `venv/` in the project directory.
 Project structure example:
 
 ```text
-CDS/
+
+├── data/
+├── model/
+├── notebooks/
+│   ├── model_lstm_autoencoder.ipynb
+│   └── model_mlp_autoencoder.ipynb
 ├── venv/
-├── requirements.txt
-├── src/
-└── README.md
+├── .gitignore
+├── 00_data_analysis.ipynb
+├── 01_data_preparation.ipynb
+├── README.md
+└── requirements.txt
 ```
 
 ---
@@ -165,10 +181,6 @@ The project is configured with a `.gitignore` to ensure this dataset is not acci
 
 ## Data Preparation
 
-### Overview
-This notebook prepares raw robot sensor data for unsupervised MLP Autoencoder training.
-The model is trained exclusively on normal samples using a sliding window appraoch. It learns to reconstruct a 300-dimension input vector and detect anomalies via Mean Squared Error (MSE) reconstruction loss.
-
 ### Requirements
 In bash, run the following:
 `.\venv\Scripts\activate`
@@ -182,17 +194,6 @@ In bash, run the following:
 
 3. Verify `01_data_preparation.ipynb`: Cell 9 prints **"✓ All checks passed"**.
 
-### Training 
-
-1. Run `02_train.ipynb`
-
-### Infering results
-
-1. In bash, run the following:
-`git add -f robot_autoencoder.pth`
-`git add -f data/processed/scaler.pkl`
-
-2. Run `03_inference.ipynb`
 
 ### Output Files (written to data/processed/)
 | File                  | Description                                      |
@@ -209,22 +210,86 @@ In bash, run the following:
 - **Processed shape:** Each sample is a 300-dimension vector (15 sensors * 20 timesteps)
 - **Total training windows:** 204,854
 
-### Key Design Decisions
-| Decision                        | Reason                                              |
-|---------------------------------|-----------------------------------------------------|
-| Sliding Window (Size 20)    | Captures temporal patterns while maintaining a fixed input size for MLP.        |
-| 300-Dimension Input                  | 15 sensors * 20 steps focuses on diagnostic mechanical vitals.         |
-| Step Size = 5   | Overlapping windows provide data augmentation for a robust normal baseline.           |
-| Unsupervised Training        | Model learns only "Normal" behavior; no anomalies seen during training.                 |
-| float32 Conversion      | Reduces memory footprint by 50% and ensures PyTorch compatibility.
-| StandardScaler (Train-only)  | Prevents data leakage; ensures all sensors have equal weight.       |
-
 ### Splits
 | Split | Normal | Anomaly | Total |
 |-------|--------|---------|-------|
 | Train | 204,854    | 0       | 204,854   |
 | Val   | 43,865    | 0       | 43,865   |
 | Test  | 44,076    | 163,999     | 208,075   |
+
+------
+## MLP Autoencoder (Baseline Unsupervised)
+
+### Overview
+
+The MLP Autoencoder serves as the baseline supervised model. It learns a compressed representation of "Normal" robot behaviour. By reconstructing input data, it identifies anomalies as windows with high Mean Squared Error (MSE).
+
+### Key Design Decisions
+
+| Decision                  | Reason                                      |
+|-----------------------|--------------------------------------------------|
+| Sliding Window (Size 20)            | Captures temporal snapshots while maintaining fixed input size for MLP   |
+| 300-dimension input            | 15 sensors x 20 steps focused on mechanical vitals              |
+| Bottleneck (300 → 64 → 300)    | Forces the model to learn the most important features of normal operation                     |
+| Zero false alarm threshold      | Calibrated to Max-Val MSE (0.2801) to prioritise industrial uptime                   |
+
+### Model Architecture
+```
+Input: (batch, 300)
+    ↓
+Linear (300 → 128) + ReLU
+    ↓
+Linear (128 → 64) + ReLU (Bottleneck)
+    ↓
+Linear (64 → 128) + ReLU
+    ↓
+Linear (128 → 300)
+    ↓
+Output: Reconstructed 300-dim vector
+```
+
+------
+## LSTM Autoencoder (Temporal Unsupervised)
+
+### Overview
+
+Unlike the MLP, LSTM Autoencoder treats the sensor data as a sequence, using the endoer-decoder architecture to reconstruct order of events, making it more sensitive to timing-based anomalies.
+
+### Key Design Decisions
+
+| Decision                  | Reason                                      |
+|-----------------------|--------------------------------------------------|
+| Sequential input            | Maintains data as (20, 15) to preserve temporal dependecies   |
+| Hidden Dim (64)            | Balances model capacity with memory constraints of sequential processing              |
+| Batch size (128)    | Optimised for stable gradient descent                     |
+| Cycle-level evaluation      | Aggregates window errros to flag anomalies that emerge over long robot tasks                   |
+
+### Model Architecture
+```
+Input: (batch, 20, 15)
+    ↓
+LSTM Encoder (Hidden: 64) -> Returns Last Hidden State
+    ↓
+Repeat Vector (20 times)
+    ↓
+LSTM Decoder (Hidden: 64) -> Returns Sequence
+    ↓
+TimeDistributed Linear (64 → 15)
+    ↓
+Output: Reconstructed (batch, 20, 15)
+```
+
+-----
+### Thresholds of MLP and LSTM Autoencoders
+| Model | Input Shape | Architecture | Calibration Threshold |
+|--------|--------------------|----------------------|---------------------|
+| MLP Autoencoder | Flattened (300) | 4 layer dense (Bottleneck: 64) | **0.2801** (Max-Val MSE) |
+| LSTM Autoencoder | Sequential (20, 15) | Encoder-Decoder LSTM (64 units) | **2.7171** (Max-Val MSE) |
+
+### Performance
+
+- **The "Detection Gap":** Evalutation revealed that while both models achieved **zero false alarms**, they suffered from low recall (0% at window-level).
+- **Cycle-level lift:** By aggregating window errors across a full robot cycle, the MLP achieved **14% recall**, proving temporal aggregation is superior to isolated window analysis.
 
 ------
 
