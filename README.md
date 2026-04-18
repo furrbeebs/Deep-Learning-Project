@@ -12,7 +12,7 @@ This project implements three deep learning architectures to detect mechanical a
 ### Model Architectures
 - **MLP Autoencoder:** Baseline model using flattened 300 dimension vectors (20 timesteps x 15 features)
 - **LSTM Autoencoder:** Temporal aware model to capture sequence dependecies in sensor data.
-- **LSTM Classifier: **
+- **LSTM Classifier: ** A supervised many-to-one model that processes 5-second multivariate sensor sequences to predict a single binary anomaly probability. 
 
 ------
 ### Prerequisites
@@ -317,13 +317,7 @@ While autoencoders detect anomalies via reconstruction error, a supervised class
 ### Data Preparation
 
 Ensure that Dataset Setup is done.
-Run `03_data_prep_lstm_classifier.ipynb`
-
-**Key Operations:**
-- Redefines anomaly label: category 12 = normal, categories 0–11 = anomaly
-- Selects all 129 sensor columns (after removing constant columns)
-- Extracts sliding windows: size = 500 timesteps (5 seconds), stride = 50 (90% overlap)
-- Splits at sample level to prevent temporal leakage
+Run `02_data_prep_lstm_classifier.ipynb`
 
 **Split Ratios:**
 | Split | Normal | Anomaly |
@@ -331,11 +325,6 @@ Run `03_data_prep_lstm_classifier.ipynb`
 | Train | 70% | 40% |
 | Validation | 15% | 30% |
 | Test | 15% | 30% |
-
-**Output Files:**
-- `../data/lstm_classifier/sequences.npz` — Window arrays
-- `../data/lstm_classifier/scaler.pkl` — Fitted StandardScaler
-- `../data/lstm_classifier/config.pkl` — Configuration
 
 ### Model Architecture
 
@@ -352,15 +341,6 @@ Linear (32 → 1) + Sigmoid
     ↓
 Output: anomaly probability ∈ (0, 1)
 ```
-
-### Hyperparameter Grid Search Results
-
-| Config | hidden_dim | layers | dropout | lr | Val AUC |
-|--------|------------|--------|---------|-----|---------|
-| 1 | 32 | 1 | 0.2 | 1e-3 | 0.9520 |
-| **2 (selected)** | **64** | **1** | **0.3** | **1e-3** | **0.9580** |
-| 3 | 64 | 2 | 0.3 | 1e-3 | 0.9522 |
-| 4 | 128 | 1 | 0.4 | 5e-4 | 0.9476 |
 
 ### Training
 
@@ -379,19 +359,9 @@ Run `lstm_classifier_model.ipynb`
 | Validation | 500 | 500 |
 | Test | 500 | 500 |
 
-### Output Files
-| File | Description |
-|------|-------------|
-| `../model/lstm_classifier/lstm_classifier_best.pth` | Best model weights |
-| `../model/lstm_classifier/lstm_classifier_config.pkl` | Architecture config |
-| `../figures/lstm_classifier/training_curves.png` | Loss & AUC curves |
-| `../figures/lstm_classifier/roc_and_prediction_dist.png` | ROC curve + prediction distribution |
-| `../figures/lstm_classifier/confusion_matrix.png` | Confusion matrix |
-| `../figures/lstm_classifier/failure_cases.png` | FP/FN example windows |
-
 ### Performance Summary
 
-| Metric | Balanced Test | Full Test |
+| Metric | Balanced Subset Test | Full Test |
 |--------|---------------|-----------|
 | AUC | 0.9876 | 0.9856 |
 | Accuracy | 95% | 96% |
@@ -400,7 +370,7 @@ Run `lstm_classifier_model.ipynb`
 | F1 (anomaly) | 0.95 | 0.96 |
 
 ### Reproducibility
-All results use `RANDOM_SEED = 14`. The trained model files are saved under:
+All results use `RANDOM_SEED = 14`. The pre-trained model files are saved under:
 - `./model/lstm_classifier/lstm_classifier_best.pth` (weights)
 - `./model/lstm_classifier/lstm_classifier_config.pkl` (architecture config)
 
