@@ -47,16 +47,17 @@ Project structure example:
 ├── data/
 ├── model/
 ├── notebooks/
+│   ├── 00_data_analysis.ipynb
+│   ├── 01_data_preparation.ipynb
+│   ├── 02_data_prep_lstm_classifier.ipynb
+│   ├── lstm_classifier_model.ipynb
 │   ├── model_lstm_autoencoder.ipynb
 │   └── model_mlp_autoencoder.ipynb
-│   └── 02_data_prep_lstm_classifier.ipynb
-│   └── lstm_classifier_model.ipynb
 ├── venv/
 ├── .gitignore
-├── 00_data_analysis.ipynb
-├── 01_data_preparation.ipynb
 ├── README.md
-└── requirements.txt
+├── requirements.txt
+└── voraus-ad-dataset-100hz.parquet
 ```
 
 ---
